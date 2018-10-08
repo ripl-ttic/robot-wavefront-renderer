@@ -252,6 +252,7 @@ robot_draw(BotViewer *viewer, BotRenderer *super)
             bot_quat_to_roll_pitch_yaw(self->bot_pose_last->orientation, rpy);
             sprintf(buf, "r: %6.2f\np: %6.2f\ny: %6.2f", TO_DEG(rpy[0]), TO_DEG(rpy[1]), TO_DEG(rpy[2]));
             break;
+            }
         }
         glColor3f(1,1,1);
         bot_gl_draw_text(body_to_local.trans_vec, GLUT_BITMAP_HELVETICA_12, buf,
