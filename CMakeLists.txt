@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 2.6.0)
 
+# The BASE_PATH is where the models, data, config, etc. directories are located
+if (NOT BASE_PATH)
+    set(BASE_PATH ${CMAKE_INSTALL_PREFIX})
+else (NOT EXISTS ${BASE_PATH})
+    message(WARNING "${BASE_PATH} is not a valid directory. Setting BASE_PATH: ${CMAKE_INSTALL_PREFIX}")
+    set(BASE_PATH ${CMAKE_INSTALL_PREFIX})
+endif()
+
 # pull in the pods macros. See cmake/pods.cmake for documentation
 set(POD_NAME robot-status-renderer)
 include(cmake/pods.cmake)
