@@ -246,23 +246,16 @@ robot_draw(BotViewer *viewer, BotRenderer *super)
             bot_frames_rotate_vec (self->frames, "local", "body", self->bot_pose_last->rotation_rate, rate_body);
 
             sprintf(buf, "tv: %.2f m/s\nrv: %.2f deg/s", vel_body[0], rate_body[2] * 180/M_PI);
-            } else
-                sprintf (buf, "No odom");
-            break;
         }
-        case DETAIL_RPY:
-            {
-                double rpy[3];
-                bot_quat_to_roll_pitch_yaw(self->bot_pose_last->orientation, rpy);
-                sprintf(buf, "r: %6.2f\np: %6.2f\ny: %6.2f", TO_DEG(rpy[0]), TO_DEG(rpy[1]), TO_DEG(rpy[2]));
-                break;
-            }
+        case DETAIL_RPY: {
+            double rpy[3];
+            bot_quat_to_roll_pitch_yaw(self->bot_pose_last->orientation, rpy);
+            sprintf(buf, "r: %6.2f\np: %6.2f\ny: %6.2f", TO_DEG(rpy[0]), TO_DEG(rpy[1]), TO_DEG(rpy[2]));
+            break;
         }
         glColor3f(1,1,1);
         bot_gl_draw_text(body_to_local.trans_vec, GLUT_BITMAP_HELVETICA_12, buf,
                          BOT_GL_DRAW_TEXT_DROP_SHADOW);
-//        bot_gl_draw_text(self->bot_pose_last->pos, GLUT_BITMAP_HELVETICA_12, buf,
-//                         BOT_GL_DRAW_TEXT_DROP_SHADOW);
     }
 
 
