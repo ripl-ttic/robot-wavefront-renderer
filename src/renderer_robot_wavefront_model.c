@@ -15,7 +15,6 @@
 #include <bot_vis/bot_vis.h>
 #include <bot_frames/bot_frames.h>
 
-#include <lcmtypes/general_lcmtypes.h>
 #include <lcmtypes/bot_core_pose_t.h>
 
 #define RENDERER_NAME "Robot"
@@ -46,7 +45,6 @@ typedef struct _RendererRobot {
     BotGtkParamWidget *pw;
 
     bot_core_pose_t *bot_pose_last;
-    ripl_raw_odometry_msg_t *raw_odometry_msg_last;
 
     double footprint[8];
 
@@ -67,17 +65,6 @@ on_bot_pose (const lcm_recv_buf_t *buf, const char *channel,
     if (self->bot_pose_last)
         bot_core_pose_t_destroy (self->bot_pose_last);
     self->bot_pose_last = bot_core_pose_t_copy (msg);
-}
-
-static void
-on_raw_odometry_msg (const lcm_recv_buf_t *buf, const char *channel,
-                     const ripl_raw_odometry_msg_t *msg, void *user) {
-
-    RendererRobot *self = (RendererRobot *) user;
-
-    if (self->raw_odometry_msg_last)
-        ripl_raw_odometry_msg_t_destroy (self->raw_odometry_msg_last);
-    self->raw_odometry_msg_last = ripl_raw_odometry_msg_t_copy (msg);
 }
 
 static void
@@ -250,11 +237,15 @@ robot_draw(BotViewer *viewer, BotRenderer *super)
         char buf[256];
         switch (self->display_detail) {
         case DETAIL_SPEED: {
-            if (self->raw_odometry_msg_last) {
-            sprintf(buf, "tv: %.2f m/s\nrv: %.2f deg/s", self->raw_odometry_msg_last->tv,
-                    self->raw_odometry_msg_last->rv * 180/M_PI);
-            //sqrt(SQ(self->bot_pose_last->vel[0]) + SQ(self->bot_pose_last->vel[1]) +
-            //            SQ(self->bot_pose_last->vel[2])));
+
+            double vel_body[3];
+            double rate_body[3];
+
+            bot_frames_rotate_vec (self->frames, "local", "body", self->bot_pose_last->vel, vel_body);
+
+            bot_frames_rotate_vec (self->frames, "local", "body", self->bot_pose_last->rotation_rate, rate_body);
+
+            sprintf(buf, "tv: %.2f m/s\nrv: %.2f deg/s", vel_body[0], rate_body[2] * 180/M_PI);
             } else
                 sprintf (buf, "No odom");
             break;
@@ -435,8 +426,6 @@ setup_renderer_robot_model(BotViewer *viewer, int render_priority,
 
     //self->bot_pose_last = NULL;
     bot_core_pose_t_subscribe (self->lcm, "POSE", on_bot_pose, self);
-    ripl_raw_odometry_msg_t_subscribe (self->lcm, "ODOMETRY", on_raw_odometry_msg, self);
-
     bot_viewer_add_event_handler(viewer, &self->ehandler, render_priority);
     bot_viewer_add_renderer(viewer, &self->renderer, render_priority);
 
